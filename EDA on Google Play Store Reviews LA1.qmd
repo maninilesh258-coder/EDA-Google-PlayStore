@@ -1,0 +1,251 @@
+---
+title: "EDA on Google Play Store Reviews"
+author: "Nilesh Mani & Yogesh"
+format: html
+---
+
+## Team Details
+
+Team Number: 26 Team Name: Data Detectives
+
+Members:\
+1. Nilesh Mani (1NT23IS143)\
+2. Yogesh (1NT23IS254)
+
+## Section: C, D
+
+# Load Libraries
+
+```{r}
+## Load Libraries
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(stringr)
+
+```
+
+## **Load Datasets**
+
+```{r}
+apps <- read.csv("C:/Users/acer/Downloads/LA1Files/googleplaystore.csv")
+reviews <- read.csv("C:/Users/acer/Downloads/LA1Files/googleplaystore_user_reviews.csv")
+```
+
+## **Basic Info**
+
+```{r}
+head(apps)
+tail(apps)
+dim(apps)
+nrow(apps)
+ncol(apps)
+str(apps)
+summary(apps)
+names(apps)
+
+head(reviews)
+tail(reviews)
+dim(reviews)
+nrow(reviews)
+ncol(reviews)
+str(reviews)
+summary(reviews)
+names(reviews)
+```
+
+## **Data Cleaning(Apps)**
+
+```{r}
+colSums(is.na(apps))
+
+apps <- apps %>% filter(Rating <= 5)
+apps <- apps %>% drop_na(Rating)
+
+apps$Installs <- gsub("[+,]", "", apps$Installs)
+apps$Installs <- as.numeric(apps$Installs)
+
+apps$Price <- gsub("[$]", "", apps$Price)
+apps$Price <- as.numeric(apps$Price)
+
+apps <- distinct(apps)
+apps <- na.omit(apps)
+```
+
+## **Data Cleaning(Reviews)**
+
+```{r}
+colSums(is.na(reviews))
+
+reviews <- na.omit(reviews)
+reviews <- distinct(reviews)
+
+reviews$Sentiment <- as.factor(reviews$Sentiment)
+```
+
+## **Merge Datasets**
+
+```{r}
+df <- merge(apps, reviews, by="App")
+
+head(df)
+dim(df)
+```
+
+## **Visualisation**
+
+```{r}
+ggplot(df, aes(x=Category)) + geom_bar(fill="blue")
+ggplot(df, aes(x=Rating)) + geom_histogram(fill="green", bins=30)
+ggplot(df, aes(x=Sentiment)) + geom_bar(fill="orange")
+ggplot(df, aes(x=Sentiment_Polarity)) + geom_histogram(fill="purple")
+```
+
+## **Univariative Analysis**
+
+```{r}
+table(df$Category)
+table(df$Sentiment)
+prop.table(table(df$Sentiment))
+
+summary(df$Rating)
+summary(df$Installs)
+
+mean(df$Rating)
+median(df$Rating)
+sd(df$Rating)
+```
+
+## **Graphs(Apps)**
+
+```{r}
+# Category distribution
+ggplot(df, aes(x=Category)) +
+  geom_bar(fill="blue") +
+  theme(axis.text.x = element_text(angle=90))
+
+# Rating distribution
+ggplot(df, aes(x=Rating)) +
+  geom_histogram(fill="green", bins=30)
+```
+
+## **Graphs(Reviews)**
+
+```{r}
+# Sentiment
+ggplot(df, aes(x=Sentiment)) +
+  geom_bar(fill="orange")
+
+# Polarity
+ggplot(df, aes(x=Sentiment_Polarity)) +
+  geom_histogram(fill="purple")
+```
+
+## **Bivariative Analysis**
+
+```{r}
+# Rating vs Category
+ggplot(df, aes(x=Category, y=Rating)) +
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle=90))
+
+# Sentiment vs Polarity
+ggplot(df, aes(x=Sentiment, y=Sentiment_Polarity)) +
+  geom_boxplot(fill="red")
+```
+
+## **Corelation**
+
+```{r}
+cor(df$Rating, df$Sentiment_Polarity)
+cor(df$Sentiment_Polarity, df$Sentiment_Subjectivity)
+```
+
+## **Group Analysis**
+
+```{r}
+df %>%
+  group_by(Category) %>%
+  summarise(avg_rating = mean(Rating),
+            total_apps = n())
+
+df %>%
+  group_by(Sentiment) %>%
+  summarise(avg_polarity = mean(Sentiment_Polarity))
+```
+
+## **Additional Analysis**
+
+```{r}
+summary(df$Price)
+
+table(head(df$Type, 20))
+
+length(unique(df$Category))
+
+max(df$Rating)
+min(df$Rating)
+
+df <- df %>% mutate(high_rating = ifelse(Rating > 4.5, "Yes", "No"))
+table(df$high_rating)
+```
+
+## **Filtering**
+
+```{r}
+top_apps <- df %>% arrange(desc(Rating)) %>% head()
+
+cheap_apps <- df %>% filter(Price == 0)
+
+high_polarity <- df %>% filter(Sentiment_Polarity > 0.5)
+```
+
+## **Sorting**
+
+```{r}
+df %>% arrange(desc(Sentiment_Polarity)) %>% head()
+df %>% arrange(Sentiment_Polarity) %>% head()
+```
+
+## **Analysis**
+
+```{r}
+summary(df$Rating)
+summary(df$Installs)
+
+table(df$Category)
+table(df$Sentiment)
+
+length(unique(df$App))
+```
+
+## **New Column**
+
+```{r}
+df <- df %>% mutate(popularity = ifelse(Installs > 1000000, "High", "Low"))
+table(df$popularity)
+```
+
+## **Statistics**
+
+```{r}
+mean(df$Rating)
+median(df$Rating)
+sd(df$Rating)
+
+range(df$Rating)
+quantile(df$Rating)
+```
+
+## Insights
+
+-   Most apps belong to categories like GAME and FAMILY\
+-   Majority of reviews are positive\
+-   Higher rated apps tend to have better sentiment\
+-   Free apps dominate the dataset\
+-   Sentiment polarity shows user satisfaction trends
+
+## Conclusion
+
+This analysis combines app data and user reviews to understand the relationship between app performance and user sentiment. The results show that higher-rated apps generally receive more positive feedback.
