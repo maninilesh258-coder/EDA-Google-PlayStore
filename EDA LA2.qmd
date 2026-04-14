@@ -1,0 +1,162 @@
+---
+title: "EDA on Google Play Store Reviews"
+author: "Nilesh Mani & Yogesh"
+format: html
+---
+
+## Team Details
+
+Team Number: 26 Team Name: Data Detectives
+
+Members:\
+1. Nilesh Mani (1NT23IS143)\
+2. Yogesh (1NT23IS254)
+
+## Section: C, D
+
+# Load Libraries
+
+```{r}
+packages <- c("ggplot2","dplyr","ggridges","plotly")
+
+for(p in packages){
+  if(!require(p, character.only = TRUE)){
+    install.packages(p)
+    library(p, character.only = TRUE)
+  }
+}
+```
+
+```{r}
+## Load Libraries
+library(ggplot2)
+library(dplyr)
+library(plotly)
+library(GGally)
+library(ggridges)
+```
+
+## **Load Datasets**
+
+```{r}
+apps <- read.csv("C:/Users/acer/Downloads/LA1Files/googleplaystore.csv")
+reviews <- read.csv("C:/Users/acer/Downloads/LA1Files/googleplaystore_user_reviews.csv")
+```
+
+## **Data Cleaning(Apps & Reviews)**
+
+```{r}
+## Data Cleaning
+apps <- apps[!duplicated(apps), ]
+apps <- apps[!is.na(apps$Rating), ]
+
+apps$Installs <- gsub("[+,]", "", apps$Installs)
+apps$Installs <- as.numeric(apps$Installs)
+
+apps$Price <- gsub("\\$", "", apps$Price)
+apps$Price <- as.numeric(apps$Price)
+
+apps$Reviews <- as.numeric(apps$Reviews)
+
+reviews <- reviews[!duplicated(reviews), ]
+reviews <- na.omit(reviews)
+```
+
+## **Merge Datasets**
+
+```{r}
+df <- merge(apps, reviews, by="App")
+
+head(df)
+dim(df)
+```
+
+## **Visualisation**
+
+## **APPS DATA**
+
+```{r}
+ggplot(apps, aes(Rating)) + geom_histogram()
+ggplot(apps, aes(Category)) + geom_bar()
+ggplot(apps, aes(Type)) + geom_bar()
+ggplot(apps, aes(Content.Rating)) + geom_bar()
+ggplot(apps, aes(Price)) + geom_histogram()
+ggplot(apps, aes(Installs)) + geom_histogram()
+ggplot(apps, aes(Reviews)) + geom_histogram()
+ggplot(apps, aes(Rating)) + geom_density()
+ggplot(apps, aes(Installs, Rating)) + geom_point()
+ggplot(apps, aes(Reviews, Rating)) + geom_point()
+```
+
+## **RELATIONSHIPS**
+
+```{r}
+ggplot(apps, aes(Type, Rating)) + geom_boxplot()
+ggplot(apps, aes(Category, Rating)) + geom_boxplot()
+ggplot(apps, aes(Price, Rating)) + geom_point()
+ggplot(apps, aes(Reviews, Installs)) + geom_point()
+ggplot(apps, aes(Type, Installs)) + geom_boxplot()
+ggplot(apps, aes(Content.Rating, Rating)) + geom_boxplot()
+ggplot(apps, aes(Installs, Rating, color=Type)) + geom_point()
+ggplot(apps, aes(Reviews, Rating, color=Category)) + geom_point()
+ggplot(apps, aes(Installs, Rating)) + geom_smooth()
+ggplot(apps, aes(Price, Reviews)) + geom_smooth()
+```
+
+## **REVIEWS DATA**
+
+```{r}
+ggplot(reviews, aes(Sentiment)) + geom_bar()
+ggplot(reviews, aes(Sentiment_Polarity)) + geom_histogram()
+ggplot(reviews, aes(Sentiment_Subjectivity)) + geom_histogram()
+ggplot(reviews, aes(Sentiment_Polarity, Sentiment_Subjectivity)) + geom_point()
+ggplot(reviews, aes(Sentiment, Sentiment_Polarity)) + geom_boxplot()
+```
+
+## **MERGED DATA**
+
+```{r}
+ggplot(df, aes(Sentiment, Rating)) + geom_boxplot()
+ggplot(df, aes(Sentiment_Polarity, Rating)) + geom_point()
+ggplot(df, aes(Sentiment, Installs)) + geom_boxplot()
+ggplot(df, aes(Sentiment_Polarity, Installs)) + geom_point()
+ggplot(df, aes(Installs, Rating)) + facet_wrap(~Type)
+```
+
+## **ADVANCED**
+
+```{r}
+numeric_df <- df[,c("Rating","Reviews","Installs","Price")]
+heatmap(cor(numeric_df))
+
+ggpairs(numeric_df)
+
+ggplot(df, aes(Rating, Category)) + geom_density_ridges()
+
+ggplot(df, aes(Category, Reviews)) + geom_boxplot()
+ggplot(df, aes(Category, Price)) + geom_boxplot()
+```
+
+## **INTERPRETATION**
+
+\`\`\`{## Insights}
+
+-   Most apps have ratings between 4 and 4.5\
+-   Free apps dominate the market\
+-   Higher installs lead to more reviews\
+-   Positive sentiment leads to higher ratings\
+-   Price has little impact on app ratings\
+
+```         
+
+## **CONCLUSION**
+
+
+## Conclusion
+
+This report uses advanced visualization techniques to analyze app performance and user sentiment. The results show that installs and reviews are strongly correlated, while sentiment significantly impacts ratings.
+```
+
+## GitHub Repository
+
+Link: <https://github.com/maninilesh258-coder/EDA-Google-PlayStore>
